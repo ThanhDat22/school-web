@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { API_URL } from "../api/studentAPI";
 import AddStudentDialogContent from './AddStudentDialogContent';
 
-function AddStudent({ setStudents }) {
+function AddStudent({ onStudentAdded }) { // changed from AddStudent() to AddStudent({ onStudentAdded }) on 2024-11-07
 
     const [open, setOpen] = useState(false);
     const [student, setStudent] = useState({
@@ -29,16 +29,17 @@ function AddStudent({ setStudents }) {
         setStudent({ ...student, [event.target.name]: event.target.value });
     }
 
-    const fetchStudents = async () => {
-        const response = await axios.get(`${API_URL}`); // returns Promise
 
-        console.log(response.data);
-        setStudents(response.data);
-    };
 
+    // const addStudent = async (student) => {
+    //     await axios.post(`${API_URL}`, student);
+    //     fetchStudents();
+    // };
+
+    // changed on 2024-11-07
     const addStudent = async (student) => {
-        await axios.post(`${API_URL}`, student);
-        fetchStudents();
+        const response = await axios.post(`${API_URL}`, student);
+        onStudentAdded(response.data); // Pass the new student back to StudentTable
     };
 
     const handleSave = () => {

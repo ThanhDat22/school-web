@@ -7,16 +7,39 @@ import axios from "axios";
 import { API_URL } from "../api/studentAPI";
 import AddStudent from "./AddStudent";
 import EditStudent from "./EditStudent";
+import SearchBox from './SearchBox';
 import "./StudentTable.css";
+
 
 function StudentTable() {
   const [students, setStudents] = useState([]);
 
-  const fetchStudents = async () => {
-    const response = await axios.get(`${API_URL}`); // returns Promise
+  const [filteredStudents, setFilteredStudents] = useState([]); // for search adds on 2024-11-07
 
-    console.log(response.data);
+  // Filter students based on search input; adds on 2024-11-07
+  const handleSearch = (query) => {
+    const lowerCaseQuery = query.toLowerCase();
+    const filtered = students.filter(
+      (student) =>
+        student.studentId.toString().includes(lowerCaseQuery) ||
+        student.name.toLowerCase().includes(lowerCaseQuery) ||
+        student.major.toLowerCase().includes(lowerCaseQuery)
+    );
+    setFilteredStudents(filtered);
+  };
+
+
+  const fetchStudents = async () => {
+    const response = await axios.get(`${API_URL}`);
     setStudents(response.data);
+    setFilteredStudents(response.data);
+  };
+
+  // Function to handle new student addition
+  const handleStudentAdded = (newStudent) => {
+    // Add new student to both students and filteredStudents arrays
+    setStudents((prevStudents) => [...prevStudents, newStudent]);
+    setFilteredStudents((prevFiltered) => [...prevFiltered, newStudent]);
   };
 
   const deleteStudent = async (studentId) => {
@@ -73,14 +96,18 @@ function StudentTable() {
   return (
     <div className="bg-container">
       <div className="tbl-container">
+
+        <SearchBox onSearch={handleSearch} /> {/* Render SearchBox with handleSearch adds on 2024-11-07*/}
+
         <div className="btn-container">
-          <AddStudent setStudents={setStudents}/>
+          <AddStudent onStudentAdded={handleStudentAdded} />
         </div>
-        <DataGrid data-testid="student-table"
-          rows={students}
+        <DataGrid 
+          data-testid="student-table"
+          rows={filteredStudents} // change to filteredStudents on 2024-11-07
           columns={columns}
           disableRowSelectionOnClick={true}
-          getRowId={row => row.studentId}
+          getRowId={(row) => row.studentId}
           getRowClassName={(params) =>
             params.indexRelativeToCurrentPage % 2 === 0 ? 'hot' : 'cold'
           }
